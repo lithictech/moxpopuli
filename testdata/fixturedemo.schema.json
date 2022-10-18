@@ -1,0 +1,111 @@
+{
+  "properties": {
+    "arraywithobjects": {
+      "items": {
+        "properties": {
+          "myid": {
+            "format": "uuid4",
+            "maxLength": 36,
+            "minLength": 36,
+            "type": "string",
+            "x-samples": 5,
+            "x-sensitive": true
+          }
+        },
+        "type": "object",
+        "x-samples": 5
+      },
+      "type": "array",
+      "x-samples": 5,
+      "x-seenMaxLength": 1,
+      "x-seenMinLength": 1
+    },
+    "array-of-ids": {
+      "items": {
+        "format": "uuid4",
+        "maxLength": 36,
+        "minLength": 36,
+        "type": "string",
+        "x-samples": 5,
+        "x-sensitive": true
+      },
+      "type": "array",
+      "x-samples": 5,
+      "x-seenMaxLength": 2,
+      "x-seenMinLength": 2
+    },
+    "base64bytes": {
+      "type": "string",
+      "x-samples": 5,
+      "x-seenMaxLength": 24,
+      "x-seenMinLength": 12,
+      "x-sensitive": true
+    },
+    "started_on": {
+      "format": "date",
+      "type": "string",
+      "x-samples": 5,
+      "x-seenMaximum": "2031-07-08",
+      "x-seenMinimum": "2015-11-26"
+    },
+    "ended_at": {
+      "format": "date-time",
+      "type": "string",
+      "x-samples": 5,
+      "x-seenMaximum": "2032-02-01T03:14:58-08:00",
+      "x-seenMinimum": "2019-02-15T02:37:58-08:00"
+    },
+    "email": {
+      "format": "email",
+      "type": "string",
+      "x-samples": 5,
+      "x-seenMaxLength": 20,
+      "x-seenMinLength": 18,
+      "x-sensitive": true
+    },
+    "SessoinIP": {
+      "format": "ipv4",
+      "type": "string",
+      "x-samples": 5,
+      "x-seenMaxLength": 15,
+      "x-seenMinLength": 13
+    },
+    "currency": {
+      "format": "iso-currency",
+      "maxLength": 2,
+      "minLength": 2,
+      "type": "string",
+      "x-samples": 5,
+      "x-seenStrings": [
+        "AWG",
+        "GEL",
+        "ILS",
+        "NAD",
+        "XPF"
+      ]
+    },
+    "databaseid": {
+      "format": "numerical",
+      "type": "string",
+      "x-samples": 5,
+      "x-seenMaximum": "1000",
+      "x-seenMinimum": "500"
+    },
+    "homepage": {
+      "format": "uri",
+      "type": "string",
+      "x-samples": 5,
+      "x-seenMaxLength": 33,
+      "x-seenMinLength": 24,
+      "x-uriLocations": [
+        "http://RajGbjZ.ru",
+        "http://aACXtNc.biz",
+        "https://PQdXgBt.info",
+        "https://VBfTaOD.ru",
+        "https://www.sJbMDuJ.org"
+      ]
+    }
+  },
+  "type": "object",
+  "x-samples": 5
+}

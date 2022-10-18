@@ -1,0 +1,274 @@
+{
+  "asyncapi": "2.4.0",
+  "info": {
+    "contact": {
+      "email": "hello@webhookdb.com",
+      "name": "Hello"
+    },
+    "description": "These are the WebhookDB endpoints available for a demo org.",
+    "termsOfService": "https://webhookdb.com/terms/",
+    "title": "WebhookDB Integrations for Demo Org",
+    "version": "1.0.0"
+  },
+  "servers": {
+    "localhost:18001": {
+      "protocol": "http",
+      "protocolVersion": "1.1",
+      "url": "localhost:18001"
+    }
+  },
+  "channels": {
+    "/v1/service_integrations/svi_81f5em7skqagk7pstse7b4j1r": {
+      "subscribe": {
+        "bindings": {
+          "http": {
+            "method": "POST",
+            "type": "request"
+          }
+        },
+        "message": {
+          "bindings": {
+            "http": {
+              "headers": {
+                "properties": {
+                  "Accept": {
+                    "type": "string",
+                    "x-lastValue": "*/*"
+                  },
+                  "Accept-Encoding": {
+                    "type": "string",
+                    "x-lastValue": "gzip"
+                  },
+                  "Connection": {
+                    "type": "string",
+                    "x-lastValue": "close"
+                  },
+                  "Host": {
+                    "type": "string",
+                    "x-lastValue": "localhost:18001"
+                  },
+                  "User-Agent": {
+                    "type": "string",
+                    "x-lastValue": "my awesome app"
+                  },
+                  "Version": {
+                    "type": "string",
+                    "x-lastValue": "HTTP/1.1"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "contentType": "application/json",
+          "correlationId": {
+            "location": "$message.header#/Trace-Id"
+          },
+          "headers": {
+            "properties": {
+              "Whdb-Secret": {
+                "type": "string",
+                "x-samples": 8,
+                "x-seenMaxLength": 25,
+                "x-seenMinLength": 24,
+                "x-sensitive": true
+              }
+            },
+            "type": "object",
+            "x-samples": 8
+          },
+          "payload": {
+            "properties": {
+              "created_at": {
+                "format": "date-time",
+                "type": "string",
+                "x-samples": 8,
+                "x-seenMaximum": "2022-09-15T03:14:39.885+00:00",
+                "x-seenMinimum": "2022-09-15T03:14:17.222+00:00"
+              },
+              "email": {
+                "format": "email",
+                "type": "string",
+                "x-samples": 8,
+                "x-seenMaxLength": 34,
+                "x-seenMinLength": 18,
+                "x-sensitive": true
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer",
+                "x-samples": 8,
+                "x-seenMaximum": 20,
+                "x-seenMinimum": 12
+              },
+              "name": {
+                "type": "string",
+                "x-samples": 8,
+                "x-seenMaxLength": 21,
+                "x-seenMinLength": 0
+              },
+              "note": {
+                "type": "string",
+                "x-samples": 8,
+                "x-seenMaxLength": 0,
+                "x-seenMinLength": 0
+              },
+              "opaque_id": {
+                "type": "string",
+                "x-identifier": true,
+                "x-samples": 8,
+                "x-seenMaxLength": 29,
+                "x-seenMinLength": 28,
+                "x-sensitive": true
+              },
+              "password_digest": {
+                "type": "string",
+                "x-identifier": true,
+                "x-samples": 8,
+                "x-seenMaxLength": 60,
+                "x-seenMinLength": 60,
+                "x-sensitive": true
+              },
+              "soft_deleted_at": {
+                "x-nullable": true,
+                "x-samples": 8
+              },
+              "updated_at": {
+                "x-nullable": true,
+                "x-samples": 8
+              }
+            },
+            "type": "object",
+            "x-samples": 8
+          }
+        }
+      }
+    },
+    "/v1/service_integrations/svi_ct14kxb4ngg3auyrysjwzjlk5": {
+      "subscribe": {
+        "bindings": {
+          "http": {
+            "method": "POST",
+            "type": "request"
+          }
+        },
+        "message": {
+          "bindings": {
+            "http": {
+              "headers": {
+                "properties": {
+                  "Accept": {
+                    "type": "string",
+                    "x-lastValue": "*/*"
+                  },
+                  "Accept-Encoding": {
+                    "type": "string",
+                    "x-lastValue": "gzip"
+                  },
+                  "Connection": {
+                    "type": "string",
+                    "x-lastValue": "close"
+                  },
+                  "Host": {
+                    "type": "string",
+                    "x-lastValue": "localhost:18001"
+                  },
+                  "User-Agent": {
+                    "type": "string",
+                    "x-lastValue": "my awesome app"
+                  },
+                  "Version": {
+                    "type": "string",
+                    "x-lastValue": "HTTP/1.1"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "contentType": "application/json",
+          "correlationId": {
+            "location": "$message.header#/Trace-Id"
+          },
+          "headers": {
+            "properties": {
+              "Whdb-Secret": {
+                "type": "string",
+                "x-samples": 2,
+                "x-seenMaxLength": 25,
+                "x-seenMinLength": 24,
+                "x-sensitive": true
+              }
+            },
+            "type": "object",
+            "x-samples": 2
+          },
+          "payload": {
+            "properties": {
+              "created_at": {
+                "format": "date-time",
+                "type": "string",
+                "x-samples": 2,
+                "x-seenMaximum": "2022-09-15T03:14:39.885+00:00",
+                "x-seenMinimum": "2022-09-14T20:14:39-07:00"
+              },
+              "email": {
+                "format": "email",
+                "type": "string",
+                "x-samples": 2,
+                "x-seenMaxLength": 34,
+                "x-seenMinLength": 19,
+                "x-sensitive": true
+              },
+              "id": {
+                "format": "int32",
+                "type": "integer",
+                "x-samples": 2,
+                "x-seenMaximum": 20,
+                "x-seenMinimum": 20
+              },
+              "name": {
+                "type": "string",
+                "x-samples": 2,
+                "x-seenMaxLength": 21,
+                "x-seenMinLength": 20,
+                "x-sensitive": true
+              },
+              "note": {
+                "type": "string",
+                "x-samples": 2,
+                "x-seenMaxLength": 0,
+                "x-seenMinLength": 0
+              },
+              "opaque_id": {
+                "type": "string",
+                "x-identifier": true,
+                "x-samples": 2,
+                "x-seenMaxLength": 29,
+                "x-seenMinLength": 28,
+                "x-sensitive": true
+              },
+              "password_digest": {
+                "type": "string",
+                "x-samples": 2,
+                "x-seenMaxLength": 60,
+                "x-seenMinLength": 60,
+                "x-sensitive": true
+              },
+              "soft_deleted_at": {
+                "x-nullable": true,
+                "x-samples": 2
+              },
+              "updated_at": {
+                "x-nullable": true,
+                "x-samples": 2
+              }
+            },
+            "type": "object",
+            "x-samples": 2
+          }
+        }
+      }
+    }
+  }
+}

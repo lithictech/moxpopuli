@@ -1,0 +1,2 @@
+{"path": "/v1/myapp/webhook", "method": "POST", "headers": {"X-Forwarded-For":  "1.2.3.4", "User-Agent": "Some API", "Content-Type":  "application/json"}, "body": {"x":  1}}
+{"path": "/v1/myapp/webhook?x=5", "method": "POST", "headers": {"X-Forwarded-For":  "1.2.3.4", "User-Agent": "Some API", "My-App-Header":  "abc"}, "body": {"x":  2}}

@@ -1,0 +1,13 @@
+{
+  "asyncapi": "2.4.0",
+  "info": {
+    "title": "WebhookDB Integrations for Demo Org",
+    "description": "These are the WebhookDB endpoints available for a demo org.",
+    "termsOfService": "https://webhookdb.com/terms/",
+    "contact": {
+      "name": "Hello",
+      "email": "hello@webhookdb.com"
+    },
+    "version": "1.0.0"
+  }
+}
