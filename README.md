@@ -1,5 +1,8 @@
 # Mox Populi
 
+**See the presentation we gave at AsyncAPI Conf 2022 about Mox Populi:
+_[Building AsyncAPI Specs from Real-World API Data](https://github.com/lithictech/moxpopuli/blob/main/docs/asyncapi-conf-2022-presentation.pdf)_**
+
 Mox Populi is a tool to build comprehensive JSON Schemas from real-world events and payloads.
 That is, instead of the centralized, top-down approach of using a specification to drive development,
 you can generate a specification from actual running services.
