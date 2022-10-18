@@ -23,13 +23,13 @@ vet:
 	@go vet
 
 test:
+ifdef CI
+	LOG_LEVEL=fatal go test -race ./...
+else
 	@LOG_LEVEL=fatal ginkgo -r
+endif
 
-update-test-snapshots:
-	UPDATE_SNAPSHOTS=true make test
-
-bench:
-	@LOG_LEVEL=fatal ginkgo -r --focus=benchmarks
+check: vet lint test
 
 build:
 	@go build -o moxpopuli cmd/moxpopuli/main.go
