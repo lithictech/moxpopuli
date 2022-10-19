@@ -1,7 +1,7 @@
 package datagen
 
 import (
-	"fmt"
+	"context"
 	"github.com/lithictech/moxpopuli/faker"
 	. "github.com/lithictech/moxpopuli/jsonformat"
 	. "github.com/lithictech/moxpopuli/schema"
@@ -13,7 +13,16 @@ import (
 	"time"
 )
 
-func Generate(key string, sch Schema) interface{} {
+type GenerateInput struct {
+	// The schema to fixture data for.
+	Schema Schema
+	// The key of the property being fixtured. Generally this is only used for recursive data generation,
+	// so you can leave it blank.
+	Key string
+}
+
+func Generate(ctx context.Context, in GenerateInput) interface{} {
+	sch := in.Schema
 	f := sch.Format()
 	// Remember that 'seen min' and 'seen max' will always be valid for the format,
 	// so we can use int64 and float64 fakes and be sure we're getting int32, etc.
@@ -57,16 +66,15 @@ func Generate(key string, sch Schema) interface{} {
 		case F_NUMERICAL:
 			min, _ := strconv.Atoi(*scht.SeenMinimum())
 			max, _ := strconv.Atoi(*scht.SeenMaximum())
-			fmt.Println(min, max)
 			return strconv.Itoa(faker.Int(min, max))
 		case F_DATE:
-			return timeFaker(key, scht, TF_DATE)
+			return timeFaker(in.Key, scht, TF_DATE)
 		case F_DATETIME:
-			return timeFaker(key, scht, TF_DATETIME)
+			return timeFaker(in.Key, scht, TF_DATETIME)
 		case F_DATETIME_NOTZ:
-			return timeFaker(key, scht, TF_DATETIME_NOTZ)
+			return timeFaker(in.Key, scht, TF_DATETIME_NOTZ)
 		case F_TIME:
-			return timeFaker(key, scht, TF_TIME)
+			return timeFaker(in.Key, scht, TF_TIME)
 		case F_DURATION:
 			tmin, tmax := timestring.FromPeriod(*scht.SeenMinimum()), timestring.FromPeriod(*scht.SeenMaximum())
 			d := faker.Int64(tmin.U, tmax.U)
@@ -78,16 +86,16 @@ func Generate(key string, sch Schema) interface{} {
 	} else if scht, ok := sch.ToArray(); ok {
 		arr := make([]interface{}, faker.Int(*scht.SeenMinLength(), *scht.SeenMaxLength()))
 		for i := range arr {
-			arr[i] = Generate(strconv.Itoa(i), scht.Items())
+			arr[i] = Generate(ctx, GenerateInput{Key: strconv.Itoa(i), Schema: scht.Items()})
 		}
 		return arr
 	} else if scht, ok := sch.ToObject(); ok {
 		r := make(map[string]interface{}, len(scht.Properties()))
 		for k, v := range scht.Properties() {
-			r[k] = Generate(k, v)
+			r[k] = Generate(ctx, GenerateInput{Key: k, Schema: v})
 		}
 		return r
-	} else if sch.Nullable() {
+	} else if sch == nil || sch.Nullable() {
 		return nil
 	} else {
 		return faker.Choice([]interface{}{faker.Hex(), faker.Int()})

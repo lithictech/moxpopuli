@@ -26,7 +26,7 @@ var voxCmd = &cli.Command{
 		bindingFlag,
 	),
 	Action: func(c *cli.Context) error {
-		ctx := newCtx()
+		ctx, _ := newCtx()
 		apispec, err := loadMap(ctx, c)
 		if err != nil {
 			return err

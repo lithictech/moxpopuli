@@ -9,6 +9,7 @@ import (
 type MergeInput struct {
 	Spec          asyncapispec.Specification
 	EventIterator moxio.Iterator
+	ExampleLimit  *int
 }
 
 func LinesToHeaderNames(raw string) map[string]struct{} {

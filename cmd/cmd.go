@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/lithictech/go-aperitif/logctx"
 	"github.com/lithictech/moxpopuli"
 	"github.com/lithictech/moxpopuli/moxio"
 	"github.com/lithictech/moxpopuli/schema"
@@ -23,6 +24,7 @@ func Execute() {
 			fixtureGenCmd,
 			specgenCmd,
 			voxCmd,
+			serverCmd,
 			{
 				Name: "version",
 				Action: func(c *cli.Context) error {
@@ -38,15 +40,21 @@ func Execute() {
 	}
 }
 
-func newCtx() context.Context {
-	return moxpopuli.LoggerInContext(context.Background(), &logger{})
-}
-
-type logger struct{}
-
-func (l *logger) Log(level moxpopuli.LogLevel, msg ...interface{}) {
-	msg = append([]interface{}{level + ":"}, msg)
-	log.Println(msg...)
+func newCtx() (context.Context, moxpopuli.Config) {
+	cfg := moxpopuli.LoadConfig()
+	logger, err := logctx.NewLogger(logctx.NewLoggerInput{
+		Level:     cfg.LogLevel,
+		Format:    cfg.LogFormat,
+		File:      cfg.LogFile,
+		BuildSha:  moxpopuli.BuildSha,
+		BuildTime: moxpopuli.BuildTime,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
+	ctx = logctx.WithLogger(ctx, logger)
+	return logctx.WithTracingLogger(ctx), cfg
 }
 
 var loaderArgs = []cli.Flag{
@@ -109,4 +117,19 @@ var countFlag = &cli.IntFlag{
 
 func s1(s string) []string {
 	return []string{s}
+}
+
+var examplesFlag = &cli.IntFlag{
+	Name:    "examples",
+	Aliases: s1("e"),
+	Usage: "If given, record up to this many examples that modify the schema. " +
+		"If not given or <= 0, do not record examples.",
+}
+
+func examplesValue(c *cli.Context) *int {
+	var examples int
+	if c.IsSet("examples") {
+		examples = c.Int("examples")
+	}
+	return &examples
 }

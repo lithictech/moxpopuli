@@ -26,15 +26,10 @@ var schemagenCmd = &cli.Command{
 			Usage: "Value to pass to the payload loader routine, like a SQL query. " +
 				"See README -> Iterator Loaders for more info.",
 		},
-		&cli.IntFlag{
-			Name:    "examples",
-			Aliases: s1("e"),
-			Usage: "If given, record up to this many examples that modify the schema. " +
-				"If not given or <= 0, do not record examples.",
-		},
+		examplesFlag,
 	),
 	Action: func(c *cli.Context) error {
-		ctx := newCtx()
+		ctx, _ := newCtx()
 		sch, err := loadSchema(ctx, c)
 		if err != nil {
 			return err
@@ -48,12 +43,12 @@ var schemagenCmd = &cli.Command{
 		schout, err := schemamerge.MergeMany(ctx, schemamerge.MergeManyInput{
 			Schema:          sch,
 			PayloadIterator: payloadIterator,
-			ExampleLimit:    c.Int("examples"),
+			ExampleLimit:    examplesValue(c),
 		})
 		if err != nil {
 			return errors.Wrap(err, "merging schemas")
 		}
 
-		return save(ctx, c, schout)
+		return save(ctx, c, schout.Schema)
 	},
 }

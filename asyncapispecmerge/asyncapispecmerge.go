@@ -6,6 +6,8 @@ import (
 	"github.com/lithictech/moxpopuli/asyncapispecmerge/internal"
 )
 
+type MergeHttpEvent = httpmerge.HttpEvent
+
 var MergeHttp Merge = httpmerge.MergeHttp
 
 type MergeInput = internal.MergeInput

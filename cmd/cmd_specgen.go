@@ -29,7 +29,7 @@ var specgenCmd = &cli.Command{
 		bindingFlag,
 	),
 	Action: func(c *cli.Context) error {
-		ctx := newCtx()
+		ctx, _ := newCtx()
 		spec, err := loadMap(ctx, c)
 		if err != nil {
 			return err
@@ -47,6 +47,7 @@ var specgenCmd = &cli.Command{
 		if err := merge(ctx, asyncapispecmerge.MergeInput{
 			Spec:          spec,
 			EventIterator: iter,
+			ExampleLimit:  examplesValue(c),
 		}); err != nil {
 			return errors.Wrap(err, "merging")
 		}

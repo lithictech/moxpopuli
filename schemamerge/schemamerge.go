@@ -17,13 +17,24 @@ import (
 	"strings"
 )
 
+type MergeInput struct {
+	// If these schemas are an object's values, this is the property name.
+	Key string
+	// One of the schemas, usually the "source" (existing schema).
+	S1 Schema
+	// The other schema, usually the newly derived one.
+	S2 Schema
+}
+
 type MergeOutput struct {
 	Schema      Schema
 	TypeChanged bool
 }
 
-func Merge(key string, s1, s2 Schema) MergeOutput {
+func Merge(ctx context.Context, in MergeInput) MergeOutput {
 	sr := Schema{}
+	s1 := in.S1
+	s2 := in.S2
 	// Schemas are only empty initially.
 	// Even typeless objects have custom properties,
 	// like nullable or seen types.
@@ -64,7 +75,7 @@ func Merge(key string, s1, s2 Schema) MergeOutput {
 		// NOTE: I'm not certain this is right, it may need to be in mergeSliceProperty.
 		s2 = s2.DeepClone()
 		s2.IncrSamples()
-		sr[P_ONE_OF], mo.TypeChanged = mergeSliceProperty(P_ONE_OF, s1, s2)
+		sr[P_ONE_OF], mo.TypeChanged = mergeSliceProperty(ctx, P_ONE_OF, s1, s2)
 		return mo
 	}
 	if convertIntToFloat != nil {
@@ -134,7 +145,7 @@ func Merge(key string, s1, s2 Schema) MergeOutput {
 		}
 	} else if s2t, ok := s2.ToObject(); ok {
 		s1t, _ := s1.ToObject()
-		sr[P_PROPERTIES], mo.TypeChanged = mergeObjects(s1t, s2t)
+		sr[P_PROPERTIES], mo.TypeChanged = mergeObjects(ctx, s1t, s2t)
 	} else if s2t, ok := s2.ToArray(); ok {
 		s1t, _ := s1.ToArray()
 		// We can end up with an empty 'items' schema if the payload that
@@ -154,14 +165,14 @@ func Merge(key string, s1, s2 Schema) MergeOutput {
 			mo.TypeChanged = true
 		} else {
 			// Both have a schema, merge it and record if the type changed
-			amo := Merge(string(P_ITEMS), s1t.Items(), s2t.Items())
+			amo := Merge(ctx, MergeInput{Key: string(P_ITEMS), S1: s1t.Items(), S2: s2t.Items()})
 			sr[P_ITEMS] = amo.Schema
 			mo.TypeChanged = amo.TypeChanged
 		}
 		setIfNotNull(sr, PX_SEEN_MIN_LENGTH, internal.MinIntPtr(s1t.SeenMinLength(), s2t.SeenMinLength()))
 		setIfNotNull(sr, PX_SEEN_MAX_LENGTH, internal.MaxIntPtr(s1t.SeenMaxLength(), s2t.SeenMaxLength()))
 	}
-	postprocess(key, sr)
+	postprocess(in.Key, sr)
 	return mo
 }
 
@@ -174,14 +185,14 @@ func handleNumerical(sr Schema, t1 StringSchema, t2 StringSchema) {
 	sr[PX_SEEN_MAXIMUM] = strconv.Itoa(internal.MaxInt(t1max, t2max))
 }
 
-func mergeObjects(s1, s2 ObjectSchema) (map[string]Schema, bool) {
+func mergeObjects(ctx context.Context, s1, s2 ObjectSchema) (map[string]Schema, bool) {
 	s1props := s1.Properties()
 	s2props := s2.Properties()
 	result := make(map[string]Schema, len(s1props))
 	typeChanged := false
 	for k, s1v := range s1props {
 		if s2v, ok := s2props[k]; ok {
-			mo := Merge(k, s1v, s2v)
+			mo := Merge(ctx, MergeInput{Key: k, S1: s1v, S2: s2v})
 			result[k] = mo.Schema
 			typeChanged = typeChanged || mo.TypeChanged
 		} else {
@@ -332,7 +343,7 @@ func MergeFormat(f1, f2 JsonFormat) JsonFormat {
 	return F_NOFORMAT
 }
 
-func mergeSliceProperty(f Field, s1, s2 Schema) ([]Schema, bool) {
+func mergeSliceProperty(ctx context.Context, f Field, s1, s2 Schema) ([]Schema, bool) {
 	flat := make([]Schema, 0, 2)
 	if s, ok := s1[f]; ok {
 		flat = append(flat, CoerceSlice(s)...)
@@ -348,7 +359,7 @@ func mergeSliceProperty(f Field, s1, s2 Schema) ([]Schema, bool) {
 	for _, s := range flat {
 		key := fmt.Sprintf("%s-%s", s.Type(), s.Format())
 		if entry, ok := accum[key]; ok {
-			accum[key] = Merge("", entry, s).Schema
+			accum[key] = Merge(ctx, MergeInput{S1: entry, S2: s}).Schema
 		} else {
 			accum[key] = s
 		}
@@ -449,30 +460,62 @@ var timeFormatValueComparers = map[JsonFormat]func(values ...string) (nmin, nmax
 }
 
 type MergeManyInput struct {
-	Schema          Schema
+	// The 'starting schema'.
+	Schema Schema
+	// These payloads are merged into the starting schema.
 	PayloadIterator moxio.Iterator
-	ExampleLimit    int
+	// How many examples to record. Examples are only recorded when there is a significant schema change,
+	// like a type changes (new object properties are not recorded).
+	// If nil, do not modify examples. If <= 0, delete examples. If > 0, keep only that many examples
+	// (total examples are randomly sampled to achieve ExampleLimit examples).
+	ExampleLimit *int
 }
 
-func MergeMany(ctx context.Context, in MergeManyInput) (Schema, error) {
+type MergeManyOutput struct {
+	Schema Schema
+}
+
+// MergeMany merges payloads into a Schema.
+// It can optionally record examples.
+// If you only need to process one payload, use MergeOne.
+func MergeMany(ctx context.Context, in MergeManyInput) (MergeManyOutput, error) {
 	result := in.Schema
 	var newExamples []interface{}
 	for in.PayloadIterator.Next() {
 		msg, err := in.PayloadIterator.Read(ctx)
 		if err != nil {
-			return result, errors.Wrap(err, "payload loader iterator")
+			return MergeManyOutput{Schema: result}, errors.Wrap(err, "payload loader iterator")
 		}
 		newSchema := Derive("", msg)
-		mout := Merge("", result, newSchema)
+		mout := Merge(ctx, MergeInput{Key: "", S1: result, S2: newSchema})
 		result = mout.Schema
 		if mout.TypeChanged {
 			newExamples = append(newExamples, msg)
 		}
 	}
-	if in.ExampleLimit > 0 {
-		result[P_EXAMPLES] = fp.SampleOut(append(Examples(result), newExamples...), in.ExampleLimit)
+	if in.ExampleLimit == nil {
+	} else if *in.ExampleLimit > 0 {
+		result[P_EXAMPLES] = fp.SampleOut(append(Examples(result), newExamples...), *in.ExampleLimit)
 	} else {
 		delete(result, P_EXAMPLES)
 	}
-	return result, nil
+	return MergeManyOutput{Schema: result}, nil
+}
+
+type MergeOneInput struct {
+	Schema       Schema
+	Payload      interface{}
+	ExampleLimit *int
+}
+
+type MergeOneOutput MergeManyOutput
+
+func MergeOne(ctx context.Context, in MergeOneInput) (MergeOneOutput, error) {
+	out, err := MergeMany(ctx, MergeManyInput{
+		Schema:          in.Schema,
+		ExampleLimit:    in.ExampleLimit,
+		PayloadIterator: moxio.NewMemoryIterator([]interface{}{in.Payload}),
+	})
+	return MergeOneOutput(out), err
+
 }

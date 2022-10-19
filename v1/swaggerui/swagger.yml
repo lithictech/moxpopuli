@@ -1,0 +1,175 @@
+
+openapi: 3.0.0
+info:
+  title: WebhookDB Mox Populi
+  description: Convert real-world events into AsyncAPI specifications. See https://github.com/lithictech/moxpopuli for more. Brought to you by WebhookDB, https://webhookdb.com
+  contact:
+    name: WebhookDB
+    url: https://webhookdb.com
+    email: hello@webhookdb.com
+  license:
+    name: MIT
+    url: https://github.com/lithictech/moxpopuli/blob/main/LICENSE
+  version: 1.0.0
+servers:
+  - url: https://moxpopuli.webhookdb.com
+    description: Production API server
+  - url: http://localhost:18022
+    description: "Local development server"
+paths:
+  /v1/schemagen/quickstart:
+    post:
+      operationId: postV1SchemagenQuickstart
+      summary: Generate JSONSchema for arbitrary JSON payloads. Post an array of JSON directly. The body is the JSONSchema MoxPopuli derives for the body.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+            examples:
+              example1:
+                value: [
+                  "array_object": [ { "uuid4": "ee431c3b-1695-c0da-3341-a25657d95f59" } ],
+                  "array_uuid": [ "c6d17c01-e651-53d8-a48e-885022e9c8d3" ],
+                  "date": "2023-01-10",
+                  "date-time": "2027-06-28T08:49:24-07:00"
+                ]
+      responses:
+        '204':
+          description: The operation completed successfully.
+        'default':
+          description: error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /v1/schemagen:
+    post:
+      operationId: postV1Schemagen
+      summary: Incrementally generate JSONSchema for JSON payloads.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                schema:
+                  type: object
+                payloads:
+                  type: array
+                  items:
+                    type: object
+                examples_limit:
+                  type: integer
+                  default: 0
+                  format: int64
+      responses:
+        '201':
+          description: ok response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchemagenResponse'
+        'default':
+          description: error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /v1/specgen:
+    post:
+      operationId: postV1Specgen
+      summary: Generate an AsyncAPI spec based on events for the supported protocol. Returns the new AsyncAPI spec.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                examples_limit:
+                  type: integer
+                  format: int64
+                protocol:
+                  type: string
+                specification:
+                  type: object
+                http_events:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      path:
+                        type: string
+                      method:
+                        type: string
+                      headers:
+                        type: object
+                      body:
+                        type: object
+      responses:
+        '201':
+          description: ok response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpecgenResponse'
+        'default':
+          description: error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /v1/datagen:
+    post:
+      operationId: postV1Datagen
+      summary: Generate fixtured data for a JSONSchema.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                schema:
+                  type: object
+                count:
+                  type: integer
+                  default: 5
+                  format: int64
+      responses:
+        '201':
+          description: ok response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatagenResponse'
+        'default':
+          description: error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    DatagenResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+    Error:
+      type: object
+    SchemagenResponse:
+      type: object
+      properties:
+        schema:
+          type: object
+    SpecgenResponse:
+      type: object
+      properties:
+        specification:
+          type: object
