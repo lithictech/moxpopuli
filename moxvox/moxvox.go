@@ -28,7 +28,7 @@ type VoxInput struct {
 	Printer        io.Writer
 }
 
-func collectEventFixturesForApiSpec(_ context.Context, in VoxInput, binding string) []EventFixture {
+func collectEventFixturesForApiSpec(ctx context.Context, in VoxInput, binding string) []EventFixture {
 	servers := fp.Values(in.Spec.GetOrAddServers())
 	channels := in.Spec.GetOrAddChannels()
 	eventSpecs := make([]EventFixture, 0, len(channels)*in.Count)
@@ -57,8 +57,8 @@ func collectEventFixturesForApiSpec(_ context.Context, in VoxInput, binding stri
 				Operation:        subscribe,
 				OperationBinding: opBinding,
 				Message:          msg,
-				Headers:          datagen.Generate("", headerSchema).(map[string]interface{}),
-				Payload:          datagen.Generate("", payloadSchema),
+				Headers:          datagen.Generate(ctx, datagen.GenerateInput{Schema: headerSchema}).(map[string]interface{}),
+				Payload:          datagen.Generate(ctx, datagen.GenerateInput{Schema: payloadSchema}),
 			})
 		}
 	}

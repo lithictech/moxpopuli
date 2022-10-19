@@ -3,6 +3,9 @@
 **See the presentation we gave at AsyncAPI Conf 2022 about Mox Populi:
 _[Building AsyncAPI Specs from Real-World API Data](https://github.com/lithictech/moxpopuli/blob/main/docs/asyncapi-conf-2022-presentation.pdf)_**
 
+**And once you have an idea what it is, 
+_[try Mox Populi from your browser](https://moxpopuli.webhookdb.com/swaggerui/index.html#/default/postV1SchemagenQuickstart)_.**
+
 Mox Populi is a tool to build comprehensive JSON Schemas from real-world events and payloads.
 That is, instead of the centralized, top-down approach of using a specification to drive development,
 you can generate a specification from actual running services.
@@ -147,3 +150,19 @@ Schema generation does not support:
 - Non-object payloads. It's extremely rare for this to be a problem;
   if it is, support can be added.
 - YAML. Easy enough to add support but for now we're JSON-only.
+
+## Mox Populi Server
+
+Running `moxpopuli server` starts a server on `$PORT`, or 22021 by default.
+It exposes four endpoints, which roughly correspond to the `schemagen`, `specgen`, and `datagen` CLI commands.
+
+To see the OpenAPI document describing the API, and test it out yourself,
+go to https://moxpopuli.webhookdb.com/swaggerui/index.html#/default/postV1SchemagenQuickstart
+
+The OpenAPI specification is built mostly from the actual runtime Go structs
+using the [Sashay](https://github.com/rgalanakis/sashay) tool.
+It's really neat since it uses actual runtime code that your server uses,
+not separate documentation!
+
+You can run `moxpopuli server openapi` to generate the OpenAPI spec,
+or use `moxpopuli server swaggerui` to open a browser to the SwaggerUI page against localhost.

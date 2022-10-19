@@ -21,13 +21,16 @@ func MergeHttp(ctx context.Context, in internal.MergeInput) error {
 		if err != nil {
 			return errors.Wrap(err, "reading events")
 		}
-		mevent, ok := event.(map[string]interface{})
-		if !ok {
-			return errors.New("event must be a map[string]interface{}")
-		}
-		hevent, err := NewHttpEvent(mevent)
-		if err != nil {
-			return err
+		var hevent HttpEvent
+		if hev, ok := event.(HttpEvent); ok {
+			hevent = hev
+		} else if mapev, ok := event.(map[string]interface{}); ok {
+			hevent, err = NewHttpEvent(mapev)
+			if err != nil {
+				return err
+			}
+		} else {
+			return errors.New("event must be an HttpEvent or map[string]interface{}")
 		}
 		eventUrl, err := url.ParseRequestURI(hevent.Path)
 		if err != nil {
@@ -40,15 +43,17 @@ func MergeHttp(ctx context.Context, in internal.MergeInput) error {
 		httpBinding["type"] = "request"
 		httpBinding["method"] = hevent.Method
 		q := httpBinding.GetOrAddOrTypeQuery()
-		derived := schema.Derive("", moxinternal.UrlValuesToMap(eventUrl.Query()))
-		merged := schemamerge.Merge("", q, derived).Schema
-		if len(merged.MustObject().Properties()) > 0 {
-			httpBinding["query"] = merged
+		queryMergeResult, err := schemamerge.MergeOne(ctx, schemamerge.MergeOneInput{Schema: q, Payload: moxinternal.UrlValuesToMap(eventUrl.Query())})
+		if err != nil {
+			return errors.Wrap(err, "merging query")
+		}
+		if len(queryMergeResult.Schema.MustObject().Properties()) > 0 {
+			httpBinding["query"] = queryMergeResult.Schema
 		} else {
 			delete(httpBinding, "query")
 		}
 		message := subscribe.GetOrAddMessage()
-		if err := mergeHttpMessage(message, hevent); err != nil {
+		if err := mergeHttpMessage(ctx, message, hevent); err != nil {
 			return err
 		}
 		if host, ok := hevent.CanonicalHeaders["host"]; ok {
@@ -63,7 +68,7 @@ func MergeHttp(ctx context.Context, in internal.MergeInput) error {
 	return nil
 }
 
-func mergeHttpMessage(message asyncapispec.Message, event HttpEvent) error {
+func mergeHttpMessage(ctx context.Context, message asyncapispec.Message, event HttpEvent) error {
 	appHeaders := make(map[string]interface{}, 8)
 	protoHeaders := make(map[string]interface{}, 8)
 	for headerName, headervalue := range event.Headers {
@@ -87,11 +92,17 @@ func mergeHttpMessage(message asyncapispec.Message, event HttpEvent) error {
 		message["contentType"] = "application/json"
 	}
 
-	derivedAppHeaders := schema.Derive("", appHeaders)
-	message["headers"] = schemamerge.Merge("", message.GetOrAddHeaders(), derivedAppHeaders).Schema
+	headerMergeResult, err := schemamerge.MergeOne(ctx, schemamerge.MergeOneInput{Schema: message.GetOrAddHeaders(), Payload: appHeaders})
+	if err != nil {
+		return errors.Wrap(err, "merging message headers")
+	}
+	message["headers"] = headerMergeResult.Schema
 
-	derived := schema.Derive("", event.Body)
-	message["payload"] = schemamerge.Merge("", message.GetOrAddPayload(), derived).Schema
+	payloadMergeResult, err := schemamerge.MergeOne(ctx, schemamerge.MergeOneInput{Schema: message.GetOrAddPayload(), Payload: event.Body})
+	if err != nil {
+		return errors.Wrap(err, "merging payload headers")
+	}
+	message["payload"] = payloadMergeResult.Schema
 	return nil
 }
 
@@ -106,11 +117,18 @@ func setProtocolHeaders(http asyncapispec.HttpMessageBinding, headers map[string
 }
 
 type HttpEvent struct {
-	Path             string
-	Method           string
-	Headers          map[string]string
-	CanonicalHeaders map[string]string
-	Body             map[string]interface{}
+	Path             string                 `json:"path" description:"Path of the HTTP request."`
+	Method           string                 `json:"method" description:"HTTP method, like 'GET' or 'POST'."`
+	Headers          map[string]string      `json:"headers" description:"All headers for the HTTP request."`
+	CanonicalHeaders map[string]string      `json:"-"`
+	Body             map[string]interface{} `json:"body" description:"HTTP body. Only objects are supported for now."`
+}
+
+func (h *HttpEvent) CanonizeHeaders() {
+	h.CanonicalHeaders = make(map[string]string, len(h.Headers))
+	for k, v := range h.Headers {
+		h.CanonicalHeaders[internal.CanonicalHeader(k)] = v
+	}
 }
 
 func NewHttpEvent(e map[string]interface{}) (HttpEvent, error) {

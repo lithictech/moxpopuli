@@ -183,6 +183,10 @@ func (j jsonVerbatimLoader) Iterator(ctx context.Context, arg string) (Iterator,
 	return (&jsonLineReader{R: strings.NewReader(arg)}).Iterator(ctx, "")
 }
 
+func NewMemoryIterator(objs []interface{}) Iterator {
+	return &memoryIterator{objs: objs}
+}
+
 type memoryIterator struct {
 	index int
 	objs  []interface{}

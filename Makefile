@@ -37,6 +37,15 @@ build:
 install: build
 	@mv ./moxpopuli `go env GOPATH`/bin
 
+server: build
+	./moxpopuli server
+
+server-ui: build
+	./moxpopuli server swaggerui
+
+server-openapi: build
+	./moxpopuli server openapi
+
 _mktemp:
 	@mkdir -p .temp
 

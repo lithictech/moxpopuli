@@ -17,14 +17,14 @@ var datagenCmd = &cli.Command{
 			Usage: "Number of payloads to generate.",
 		}),
 	Action: func(c *cli.Context) error {
-		ctx := newCtx()
+		ctx, _ := newCtx()
 		schema, err := loadSchema(ctx, c)
 		if err != nil {
 			return err
 		}
 		enc := moxjson.NewPrettyEncoder(c.App.Writer)
 		for i := 0; i < c.Int("count"); i++ {
-			pl := datagen.Generate("", schema)
+			pl := datagen.Generate(ctx, datagen.GenerateInput{Schema: schema})
 			if err := enc.Encode(pl); err != nil {
 				return err
 			}

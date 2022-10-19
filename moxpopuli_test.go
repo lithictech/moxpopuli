@@ -33,7 +33,7 @@ var _ = Describe("schemagen", func() {
 			PayloadIterator: iter,
 		})
 		Expect(err).ToNot(HaveOccurred())
-		Expect(dump(schout)).To(MatchJSON(`{
+		Expect(dump(schout.Schema)).To(MatchJSON(`{
 			"properties": {
 				"x": {
 					"format": "int32",
@@ -54,7 +54,7 @@ var _ = Describe("schemagen", func() {
 			PayloadIterator: iter,
 		})
 		Expect(err).ToNot(HaveOccurred())
-		Expect(dump(schout)).To(MatchJSON(`{
+		Expect(dump(schout.Schema)).To(MatchJSON(`{
 			"properties": {
 				"y": {
 					"format": "float",
@@ -76,7 +76,7 @@ var _ = Describe("schemagen", func() {
 			PayloadIterator: iter,
 		})
 		Expect(err).ToNot(HaveOccurred())
-		Expect(dump(schout)).To(MatchJSON(`{
+		Expect(dump(schout.Schema)).To(MatchJSON(`{
 			"properties": {
 				"y": {
 					"format": "float",
@@ -98,7 +98,7 @@ var _ = Describe("schemagen", func() {
 			PayloadIterator: iter,
 		})
 		Expect(err).ToNot(HaveOccurred())
-		Expect(dump(schout)).To(MatchJSON(`{
+		Expect(dump(schout.Schema)).To(MatchJSON(`{
 			"properties": {
 				"y": {
 					"type": "string",
@@ -120,7 +120,7 @@ var _ = Describe("schemagen", func() {
 			PayloadIterator: iter,
 		})
 		Expect(err).ToNot(HaveOccurred())
-		Expect(dump(schout)).To(MatchJSON(`{
+		Expect(dump(schout.Schema)).To(MatchJSON(`{
 			"properties": {
 				"x": {
 					"type": "string",
@@ -148,7 +148,7 @@ var _ = Describe("schemagen", func() {
 			PayloadIterator: iter,
 		})
 		Expect(err).ToNot(HaveOccurred())
-		Expect(dump(schout)).To(MatchJSON(`{
+		Expect(dump(schout.Schema)).To(MatchJSON(`{
 			"properties": {
 				"x": {
 					"enum": [
@@ -223,7 +223,7 @@ var _ = Describe("schemagen", func() {
 		Expect(err).ToNot(HaveOccurred())
 		schout, err := schemamerge.MergeMany(ctx, schemamerge.MergeManyInput{Schema: schema.Schema{}, PayloadIterator: iter})
 		Expect(err).ToNot(HaveOccurred())
-		Expect(dump(schout)).To(MatchJSON(`{
+		Expect(dump(schout.Schema)).To(MatchJSON(`{
 			"properties": {
 				"x": {
 					"format": "int32",
@@ -239,9 +239,9 @@ var _ = Describe("schemagen", func() {
 
 		iter, err = moxio.LoadIterator(ctx, "_", strings.Join([]string{`{"x":1}`}, "\n"))
 		Expect(err).ToNot(HaveOccurred())
-		schout, err = schemamerge.MergeMany(ctx, schemamerge.MergeManyInput{Schema: schout, PayloadIterator: iter})
+		schout, err = schemamerge.MergeMany(ctx, schemamerge.MergeManyInput{Schema: schout.Schema, PayloadIterator: iter})
 		Expect(err).ToNot(HaveOccurred())
-		Expect(dump(schout)).To(MatchJSON(`{
+		Expect(dump(schout.Schema)).To(MatchJSON(`{
 			"properties": {
 				"x": {
 					"format": "int32",
@@ -257,9 +257,9 @@ var _ = Describe("schemagen", func() {
 
 		iter, err = moxio.LoadIterator(ctx, "_", strings.Join([]string{`{"x":0}`, `{"x":1}`, `{"x":0}`}, "\n"))
 		Expect(err).ToNot(HaveOccurred())
-		schout, err = schemamerge.MergeMany(ctx, schemamerge.MergeManyInput{Schema: schout, PayloadIterator: iter})
+		schout, err = schemamerge.MergeMany(ctx, schemamerge.MergeManyInput{Schema: schout.Schema, PayloadIterator: iter})
 		Expect(err).ToNot(HaveOccurred())
-		Expect(dump(schout)).To(MatchJSON(`{
+		Expect(dump(schout.Schema)).To(MatchJSON(`{
 			"properties": {
 				"x": {
 					"enum": [
@@ -279,9 +279,9 @@ var _ = Describe("schemagen", func() {
 
 		iter, err = moxio.LoadIterator(ctx, "_", strings.Join([]string{`{"x":2}`}, "\n"))
 		Expect(err).ToNot(HaveOccurred())
-		schout, err = schemamerge.MergeMany(ctx, schemamerge.MergeManyInput{Schema: schout, PayloadIterator: iter})
+		schout, err = schemamerge.MergeMany(ctx, schemamerge.MergeManyInput{Schema: schout.Schema, PayloadIterator: iter})
 		Expect(err).ToNot(HaveOccurred())
-		Expect(dump(schout)).To(MatchJSON(`{
+		Expect(dump(schout.Schema)).To(MatchJSON(`{
 			"properties": {
 				"x": {
 					"format": "int32",
