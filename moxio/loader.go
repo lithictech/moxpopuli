@@ -147,7 +147,9 @@ type fileLoader struct {
 
 func (m fileLoader) Iterator(ctx context.Context, _ string) (Iterator, error) {
 	f, err := os.Open(m.path)
-	if err != nil {
+	if os.IsNotExist(err) {
+		return noopLoader{}, nil
+	} else if err != nil {
 		return nil, err
 	}
 	if strings.HasSuffix(m.path, ".json.csv") {

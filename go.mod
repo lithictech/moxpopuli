@@ -15,6 +15,7 @@ require (
 	github.com/rgalanakis/golangal v1.1.0
 	github.com/rgalanakis/sashay v1.1.2
 	github.com/rickb777/date v1.20.0
+	github.com/sirupsen/logrus v1.6.0
 	github.com/urfave/cli/v2 v2.15.0
 )
 
@@ -37,7 +38,6 @@ require (
 	github.com/rgalanakis/validator v0.0.0-20180731224108-4a34a8927f7c // indirect
 	github.com/rickb777/plural v1.4.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/sirupsen/logrus v1.6.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.1.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect

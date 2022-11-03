@@ -44,7 +44,7 @@ func Sniff(value interface{}) JsonType {
 	case reflect.Slice:
 		return T_ARRAY
 	default:
-		panic(fmt.Sprintf("could not sniff type from %v", value))
+		panic(fmt.Sprintf("could not sniff type from %v (%s %s)", value, v.Name(), v.Kind()))
 	}
 }
 

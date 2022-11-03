@@ -187,7 +187,7 @@ func sniffDateTimeNoTZ(s string) bool {
 }
 
 var dttzRegex = regexp.MustCompile("^[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-5][0-9].?\\d*(Z|[+-]\\d{2}:?\\d{2})?$")
-var dtNoTzRegex = regexp.MustCompile("^[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-5][0-9].?\\d*$")
+var dtNoTzRegex = regexp.MustCompile("^[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9]T[0-2][0-9]:[0-5][0-9]:[0-5][0-9]\\.?\\d*$")
 
 func sniffDate(s string) bool {
 	return dateRegex.MatchString(s)
