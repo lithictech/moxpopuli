@@ -9,6 +9,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	. "github.com/rgalanakis/golangal"
+	"github.com/rgalanakis/sashay"
 	"testing"
 )
 
@@ -24,6 +25,9 @@ var _ = Describe("v1", func() {
 	BeforeEach(func() {
 		e = api.New(api.Config{})
 		v1.Register(e)
+	})
+	It("can create a new Sashay", func() {
+		Expect(v1.NewSashay()).To(BeAssignableToTypeOf(&sashay.Sashay{}))
 	})
 	Describe("POST /v1/schemagen", func() {
 		It("generates schemas with no schema input", func() {

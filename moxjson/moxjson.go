@@ -22,6 +22,8 @@ func (p Path) String() string {
 	for i, x := range p {
 		if ss, ok := x.(fmt.Stringer); ok {
 			lines[i] = ss.String()
+		} else if x == nil {
+			panic("should never get a nil path part")
 		} else {
 			lines[i] = fmt.Sprintf("%v", x)
 		}
@@ -47,12 +49,14 @@ func ParsePath(s string) Path {
 			path[i] = v
 		} else if len(part) > 0 {
 			path[i] = part
+		} else {
+			path[i] = ""
 		}
 	}
 	return path
 }
 
-var jqInd = regexp.MustCompile("^[\\d+]$")
+var jqInd = regexp.MustCompile("^\\[\\d+\\]$")
 var numInd = regexp.MustCompile("^\\d+$")
 
 func Get(o interface{}, path Path) (interface{}, error) {
