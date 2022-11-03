@@ -1,7 +1,12 @@
+[![Status](https://github.com/lithictech/sequel-state-machine/actions/workflows/pr-checks.yml/badge.svg)](https://github.com/lithictech/moxpopuli/actions/workflows/pr-checks.yml)
+[![GoDoc](https://godoc.org/github.com/lithictech/moxpopuli?status.svg)](http://godoc.org/github.com/lithictech/moxpopuli)
+[![license](http://img.shields.io/badge/license-MIT-orange.svg)](https://raw.githubusercontent.com/lithictech/moxpopuli/main/LICENSE)
+
+
 # Mox Populi
 
 **See the presentation we gave at AsyncAPI Conf 2022 about Mox Populi:
-_[Building AsyncAPI Specs from Real-World API Data](https://github.com/lithictech/moxpopuli/blob/main/docs/asyncapi-conf-2022-presentation.pdf)_**
+_[Building AsyncAPI Specs from Real-World API Data](https://github.com/lithictech/moxpopuli/blob/main/docs/asyncapi-conf-2022-notes.pdf)_**
 
 **And once you have an idea what it is, 
 _[try Mox Populi from your browser](https://moxpopuli.webhookdb.com/swaggerui/index.html#/default/postV1SchemagenQuickstart)_.**
@@ -33,27 +38,78 @@ and to make AsyncAPI specifications available for supported services.
 
 ## Examples
 
-Generate a schema for each row in a JSONB column in a Postgres database:
+Generate a JSONSchema using each object in a JSON Lines file:
 
 ```shell
+moxpopuli schemagen --payload-loader=file://./inputs.jsonl
 ```
 
-Generate a schema for each object in a JSON array file:
+Load and save the JSONSchema to a file:
 
 ```shell
+moxpopuli schemagen \
+    --payload-loader=file://./testdata/complexpayloads.jsonl \
+    --loader=file://./schema-from-inputs.json \
+    --saver=file://./schema-from-inputs.json
 ```
 
-Load and save the schema to a file:
+Generate a JSONSchema for each row in a JSONB column in a Postgres database:
 
 ```shell
+moxpopuli schemagen \
+    --payload-loader=postgres://webhookdb:webhookdb@localhost:18005/webhookdb \
+    --payload-loader-arg="SELECT request_body FROM logged_webhooks WHERE truncated_at IS NULL LIMIT 100"
 ```
 
-Load and save the schema to a Postgres table:
+Generate a full AsyncAPI spec from some events stored in a file:
 
 ```shell
+moxpopuli specgen \
+    --loader='file://./testdata/whdbspecseed.json' \
+    --event-loader='file://./testdata/requests.jsonl'
 ```
 
-## Building Schemas from Payloads
+## Limitations
+
+Schema generation is based on a supported subset of JSON Schema.
+
+Schema generation does not support:
+
+- References. Do not include references in your schemas. `moxpopuli` will never write out references.
+  Because we cannot be sure about the schemas we see, using references could result in too much
+  diffing and confusion.
+- Non-object payloads. It's extremely rare for this to be a problem;
+  if it is, support can be added.
+- YAML. Easy enough to add support but for now we're JSON-only.
+
+Spec generation is limited only to what can be figured out from events,
+which is usually channels, subscription operations, and their data
+like bindings, headers, and payloads.
+Usually you will supply a 'seed' specification
+that includes an `info` section and whatever else is needed.
+
+## Mox Populi Server
+
+Running `moxpopuli server` starts a server on `$PORT`, or 22021 by default.
+It exposes four endpoints, which roughly correspond to the `schemagen`, `specgen`, and `datagen` CLI commands.
+
+To see the OpenAPI document describing the API, and test it out yourself,
+go to https://moxpopuli.webhookdb.com/swaggerui/index.html#/default/postV1SchemagenQuickstart
+
+The OpenAPI specification is built mostly from the actual runtime Go structs
+using the [Sashay](https://github.com/rgalanakis/sashay) tool.
+It's really neat since it uses actual runtime code that your server uses,
+not separate documentation!
+
+You can run `moxpopuli server openapi` to generate the OpenAPI spec,
+or use `moxpopuli server swaggerui` to open a browser to the SwaggerUI page against localhost.
+
+## How it Works
+
+The [linked presentation](https://github.com/lithictech/moxpopuli/blob/main/docs/asyncapi-conf-2022-notes.pdf)
+covers this at a high level. But here are some lower level and implementation notes.
+
+### Building Schemas from Payloads
 
 The core of `moxpoopuli` is generating JSON Schemas from real-world production payloads,
 such as generating a message payload from a request body,
@@ -75,7 +131,7 @@ The gist of it is:
   and uses `x-` extension fields to store information it needs for future analysis
   or generating meaningful sample data.
 
-## Loaders and Savers
+### Loaders and Savers
 
 `moxpopuli` uses a system of loaders and savers to load information like specifications
 or events, and then save them after processing.
@@ -87,7 +143,7 @@ which can be used to configure the saver/loader.
 One example is using a `postgres://` URL to connect to a database,
 with an argument that is the SQL query to select or update the required data.
 
-### Single Objects Load and Save
+#### Single Objects Load and Save
 
 When `moxpopuli` is working with things like JSONSchema or an AsyncAPI specification,
 it loads and saves them as a single JSON object.
@@ -113,7 +169,7 @@ Examples of valid saver options are:
   would run that query with the updated schema as the argument.
   Note that for single objects, there should be only one positional argument.
 
-### Iterator Loaders
+#### Iterator Loaders
 
 When generating a schema or specification, `moxpopuli` runs over many events/payloads.
 In these cases, we use the same loader system, but expect the data to be a collection.
@@ -138,31 +194,17 @@ The only difference is that:
 - Event loader keys are:
   - `http` binding: `path` (string), `method` (string), `headers` ({string:string} map), `body` ({string:any} map)
 
-### Limitations
+## Development
 
-Schema generation is based on a supported subset of JSON Schema.
+Check out the Makefile,
+it has everything you will need.
 
-Schema generation does not support:
+If it doesn't, it should be added to the Makefile 😬
 
-- References. Do not include references in your schemas. `moxpopuli` will never write out references.
-  Because we cannot be sure about the schemas we see, using references could result in too much
-  diffing and confusion.
-- Non-object payloads. It's extremely rare for this to be a problem;
-  if it is, support can be added.
-- YAML. Easy enough to add support but for now we're JSON-only.
+## Supported by
 
-## Mox Populi Server
-
-Running `moxpopuli server` starts a server on `$PORT`, or 22021 by default.
-It exposes four endpoints, which roughly correspond to the `schemagen`, `specgen`, and `datagen` CLI commands.
-
-To see the OpenAPI document describing the API, and test it out yourself,
-go to https://moxpopuli.webhookdb.com/swaggerui/index.html#/default/postV1SchemagenQuickstart
-
-The OpenAPI specification is built mostly from the actual runtime Go structs
-using the [Sashay](https://github.com/rgalanakis/sashay) tool.
-It's really neat since it uses actual runtime code that your server uses,
-not separate documentation!
-
-You can run `moxpopuli server openapi` to generate the OpenAPI spec,
-or use `moxpopuli server swaggerui` to open a browser to the SwaggerUI page against localhost.
+<p>
+  <a href="https://webhookdb.com/">
+    <img src="https://webhookdb.com/content/brand/blueonblack.png" />
+  </a>
+</p>
