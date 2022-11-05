@@ -29,7 +29,7 @@ Examples of where Mox Populi has been useful include:
 - Products that do not have programmatic ways to generate load or test data (the API is read-only or read-mostly).
 - Generating enough load to test a backend in a way that would be impractical otherwise.
 - Fixture data for something similar to property-based testing,
-  where the Max Populi-generated schema can be used to fixture data used
+  where the Mox Populi-generated schema can be used to fixture data used
   for unit and integration testing.
 
 Mox Populi is currently used by [WebhookDB](https://webhookdb.com)
@@ -199,7 +199,7 @@ The only difference is that:
 Check out the Makefile,
 it has everything you will need.
 
-If it doesn't, it should be added to the Makefile 😬
+If it doesn't, we should add to the Makefile 😬
 
 ## Supported by
 
